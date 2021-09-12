@@ -4091,7 +4091,7 @@ void registerInteraction(int argc, char *argv[]) {
     if (argc > 1 && !strcmp("--help", argv[1]))
         __testlib_help();
 
-    if (argc < 3 || argc > 6) {
+    if (argc != 1 && (argc < 3 || argc > 6)) {
         quit(_fail, std::string("Program must be run with the following arguments: ") +
                     std::string("<input-file> <output-file> [<answer-file> [<report-file> [<-appes>]]]") +
                     "\nUse \"--help\" to get help information");
@@ -4118,19 +4118,27 @@ void registerInteraction(int argc, char *argv[]) {
         }
     }
 #endif
+    if(argc == 1) {
+        FILE *in  = fdopen(3, "r");  // input
+        FILE *std = fdopen(4, "r");  // stdOutput
 
-    inf.init(argv[1], _input);
+        inf.init(in, _input);
+        ouf.init(stdin, _output);
+        ans.init(std, _answer);
+    } else {
+        inf.init(argv[1], _input);
 
-    tout.open(argv[2], std::ios_base::out);
-    if (tout.fail() || !tout.is_open())
-        quit(_fail, std::string("Can not write to the test-output-file '") + argv[2] + std::string("'"));
+        tout.open(argv[2], std::ios_base::out);
+        if (tout.fail() || !tout.is_open())
+            quit(_fail, std::string("Can not write to the test-output-file '") + argv[2] + std::string("'"));
 
-    ouf.init(stdin, _output);
+        ouf.init(stdin, _output);
 
-    if (argc >= 4)
-        ans.init(argv[3], _answer);
-    else
-        ans.name = "unopened answer stream";
+        if (argc >= 4)
+            ans.init(argv[3], _answer);
+        else
+            ans.name = "unopened answer stream";
+    }
 }
 
 void registerValidation() {
@@ -4193,7 +4201,7 @@ void registerTestlibCmd(int argc, char *argv[]) {
     if (argc > 1 && !strcmp("--help", argv[1]))
         __testlib_help();
 
-    if (argc < 4 || argc > 6) {
+    if (argc != 1 && (argc < 4 || argc > 6)) {
         quit(_fail, std::string("Program must be run with the following arguments: ") +
                     std::string("<input-file> <output-file> <answer-file> [<report-file> [<-appes>]]") +
                     "\nUse \"--help\" to get help information");
@@ -4219,9 +4227,17 @@ void registerTestlibCmd(int argc, char *argv[]) {
         }
     }
 
-    inf.init(argv[1], _input);
-    ouf.init(argv[2], _output);
-    ans.init(argv[3], _answer);
+    if(argc == 1) {
+        FILE *in  = fdopen(3, "r");  // input
+        FILE *std = fdopen(4, "r");  // stdOutput
+        inf.init(in, _input);
+        ouf.init(stdin, _output);
+        ans.init(std, _answer);
+    } else {
+        inf.init(argv[1], _input);
+        ouf.init(argv[2], _output);
+        ans.init(argv[3], _answer);
+    }
 }
 
 void registerTestlib(int argc, ...) {
